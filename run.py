@@ -1,8 +1,10 @@
 import mxnet as mx
 import tarfile
+import numpy as np
 
 from sagemaker.session import Session
 from sagemaker.mxnet import MXNetModel
+from mxnet.gluon.data.vision import transforms
 
 mx.test_utils.download('https://s3.amazonaws.com/onnx-model-zoo/resnet/resnet50v2/resnet50v2.onnx')
 
@@ -19,3 +21,29 @@ mxnet_model = MXNetModel(model_data=model_data,
                          framework_version='1.4.1')
 
 predictor = mxnet_model.deploy(initial_instance_count=1, instance_type='ml.p3.8xlarge')
+
+img_path = mx.test_utils.download('https://s3.amazonaws.com/onnx-mxnet/examples/mallard_duck.jpg')
+img = mx.image.imread(img_path)
+
+def preprocess(img):
+    transform_fn = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
+    img = transform_fn(img)
+    img = img.expand_dims(axis=0)
+    return img
+
+input_image = preprocess(img)
+scores = predictor.predict(input_image.asnumpy())
+
+mx.test_utils.download('https://s3.amazonaws.com/onnx-model-zoo/synset.txt')
+with open('synset.txt', 'r') as f:
+    labels = [l.rstrip() for l in f]
+
+a = np.argsort(scores)[::-1]
+
+for i in a[0:5]:
+        print('class=%s ; probability=%f' %(labels[i],scores[i]))
