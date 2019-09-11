@@ -18,6 +18,7 @@ role = 'arn:aws:iam::841569659894:role/sagemaker-access-role'
 mxnet_model = MXNetModel(model_data=model_data,
                          entry_point='resnet50.py',
                          role=role,
+                         image='763104351884.dkr.ecr.us-west-2.amazonaws.com/mxnet-inference:1.4.1-gpu-py36-cu100-ubuntu16.04',
                          py_version='py3',
                          framework_version='1.4.1')
 
