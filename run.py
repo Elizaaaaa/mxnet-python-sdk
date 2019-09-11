@@ -1,6 +1,7 @@
 import mxnet as mx
 import tarfile
 import numpy as np
+import time
 
 from sagemaker.session import Session
 from sagemaker.mxnet import MXNetModel
@@ -15,7 +16,7 @@ model_data = Session().upload_data(path='onnx_model.tar.gz', key_prefix='model')
 role = 'arn:aws:iam::841569659894:role/sagemaker-access-role'
 
 mxnet_model = MXNetModel(model_data=model_data,
-                         entry_point='resnet152.py',
+                         entry_point='resnet50.py',
                          role=role,
                          py_version='py3',
                          framework_version='1.4.1')
@@ -37,13 +38,21 @@ def preprocess(img):
     return img
 
 input_image = preprocess(img)
-scores = predictor.predict(input_image.asnumpy())
-
 mx.test_utils.download('https://s3.amazonaws.com/onnx-model-zoo/synset.txt')
-with open('synset.txt', 'r') as f:
-    labels = [l.rstrip() for l in f]
 
-a = np.argsort(scores)[::-1]
+def do_pred():
+    start_time = time.time()
+    scores = predictor.predict(input_image.asnumpy())
+    end_time = time.time()
+    with open('synset.txt', 'r') as f:
+        labels = [l.rstrip() for l in f]
 
-for i in a[0:5]:
+    a = np.argsort(scores)[::-1]
+
+    for i in a[0:5]:
         print('class=%s ; probability=%f' %(labels[i],scores[i]))
+
+    return end_time-start_time
+
+costtime = do_pred()
+print("this run cost {}s".format(costtime))
