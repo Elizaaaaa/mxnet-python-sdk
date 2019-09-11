@@ -4,10 +4,10 @@ import tarfile
 from sagemaker.session import Session
 from sagemaker.mxnet import MXNetModel
 
-mx.test_utils.download('https://s3.amazonaws.com/onnx-model-zoo/resnet/resnet152v1/resnet152v1.onnx')
+mx.test_utils.download('https://s3.amazonaws.com/onnx-model-zoo/resnet/resnet50v2/resnet50v2.onnx')
 
 with tarfile.open('onnx_model.tar.gz', mode='w:gz') as archive:
-    archive.add('resnet152v1.onnx')
+    archive.add('resnet50v2.onnx')
 
 model_data = Session().upload_data(path='onnx_model.tar.gz', key_prefix='model')
 role = 'arn:aws:iam::841569659894:role/sagemaker-access-role'
