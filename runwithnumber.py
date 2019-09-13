@@ -25,23 +25,6 @@ mxnet_model = MXNetModel(model_data=model_data,
 
 predictor = mxnet_model.deploy(initial_instance_count=1, instance_type='ml.p3.8xlarge')
 
-img_path = mx.test_utils.download('https://s3.amazonaws.com/onnx-mxnet/examples/mallard_duck.jpg')
-img = mx.image.imread(img_path)
-
-def preprocess(img):
-    transform_fn = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
-    img = transform_fn(img)
-    img = img.expand_dims(axis=0)
-    return img
-
-input_image = preprocess(img)
-mx.test_utils.download('https://s3.amazonaws.com/onnx-model-zoo/synset.txt')
-
 def do_pred():
     data = np.random.rand(1, 3, 224, 224)
     input_data = {"instances":data}
