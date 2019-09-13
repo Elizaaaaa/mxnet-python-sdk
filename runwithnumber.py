@@ -27,9 +27,8 @@ predictor = mxnet_model.deploy(initial_instance_count=1, instance_type='ml.p3.8x
 
 def do_pred():
     data = np.random.rand(1, 3, 224, 224)
-    input_data = {"instances":data}
     start_time = time.time()
-    scores = predictor.predict(input_data)
+    scores = predictor.predict(data)
     end_time = time.time()
     
     return end_time-start_time
